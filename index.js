@@ -35,7 +35,6 @@ const generateId = (max, min) => {
 };
 
 app.post("/api/persons", (req, res) => {
-  // console.log(req.body);
   const body = req.body;
   if (!body.name || body.name === "" || !body.number || body.number === "") {
     return res.status(400).json({
