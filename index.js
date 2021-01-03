@@ -24,12 +24,6 @@ app.post("/api/persons", (req, res, next) => {
       error: "name or number misssing",
     });
   }
-  // const temp = persons.find((person) => person.name === body.name);
-  // if (temp) {
-  //   return res.status(400).json({
-  //     error: "name must be unique",
-  //   });
-  // }
   const person = new Person({
     name: body.name,
     number: body.number,
@@ -41,16 +35,11 @@ app.post("/api/persons", (req, res, next) => {
     .then((formatedperson) => res.json(formatedperson))
     .catch((error) => next(error));
 
-  // person.save().then((savedperson) => {
-  //   res.json(savedperson.toJSON());
-  // });
-  // console.log("person", person);
-  // persons = persons.concat(person);
 });
 
 app.delete("/api/persons/:id", (req, res, next) => {
   Person.findByIdAndRemove(req.params.id)
-    .then((result) => {
+    .then(() => {
       res.status(204).end();
     })
     .catch((error) => next(error));
@@ -74,14 +63,13 @@ app.put("/api/persons/:id", (req, res, next) => {
     name: body.name,
     number: body.number,
   };
-  Person.findByIdAndUpdate(req.params.id, person, { new: true })
+  Person.findByIdAndUpdate(req.params.id, person, { new: true, runValidators:true, context:"query"})
     .then((updatedPerson) => updatedPerson.toJSON())
     .then((formatedperson) => res.json(formatedperson))
     .catch((error) => next(error));
 });
 
 app.get("/api/persons", (req, res) => {
-  // res.json(persons);
   Person.find({}).then((persons) => {
     res.json(persons.map((person) => person.toJSON()));
   });
@@ -90,15 +78,11 @@ app.get("/api/persons", (req, res) => {
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
 };
-// handler of requests with unknown endpoint
 app.use(unknownEndpoint);
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
 
-  // if (error.name === "CastError" && error.kind === "ObjectId") {
-  //   return response.status(400).send({ error: "malformatted id" });
-  // }
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
@@ -107,6 +91,7 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).json({ error: error.message });
   }
 
+  // eslint-disable-next-line no-unreachable
   next(error);
 };
 // handler of requests with result to errors
